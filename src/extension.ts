@@ -8,6 +8,9 @@ export function activate(context: vscode.ExtensionContext) {
   diagnosticCollection = vscode.languages.createDiagnosticCollection('patternGuard');
   context.subscriptions.push(diagnosticCollection);
 
+  // Auto-open panel on startup
+  PatternGuardPanel.createOrShow(context.extensionUri);
+
   // Register show panel command
   const showPanelCmd = vscode.commands.registerCommand('patternGuard.showPanel', () => {
     PatternGuardPanel.createOrShow(context.extensionUri);
@@ -21,6 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
       async () => {
         diagnosticCollection.clear();
         const issues = await scanWorkspace();
+
+        // Get total Dart files for stats
+        const dartFiles = await vscode.workspace.findFiles('**/*.dart', '**/build/**');
 
         // Group diagnostics by file
         const diagMap = new Map<string, vscode.Diagnostic[]>();
@@ -45,6 +51,11 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(
           `Pattern Guard: Found ${issues.length} issues in ${diagMap.size} files.`
         );
+
+        // Send real dynamic data to the Webview
+        if (PatternGuardPanel.currentPanel) {
+          PatternGuardPanel.currentPanel.sendScanResults(issues, dartFiles.length);
+        }
       }
     );
   });

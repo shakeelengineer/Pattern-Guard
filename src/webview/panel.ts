@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Issue } from '../detectors/types';
 
 export class PatternGuardPanel {
   public static currentPanel: PatternGuardPanel | undefined;
@@ -26,8 +27,15 @@ export class PatternGuardPanel {
     );
   }
 
+  public sendScanResults(issues: Issue[], fileCount: number) {
+    this._panel.webview.postMessage({
+      command: 'updateData',
+      issues: issues,
+      fileCount: fileCount
+    });
+  }
+
   public static createOrShow(extensionUri: vscode.Uri) {
-    // Force split screen (open beside current editor)
     const column = vscode.ViewColumn.Beside;
 
     if (PatternGuardPanel.currentPanel) {
@@ -73,7 +81,6 @@ export class PatternGuardPanel {
             --card-hover: #F1F5F9;
         }
 
-        /* Support VS Code Dark Mode */
         body.vscode-dark {
             --bg-body: #0F172A;
             --bg-panel: #1E293B;
@@ -101,7 +108,6 @@ export class PatternGuardPanel {
             flex-direction: column;
         }
 
-        /* Container */
         .app-container {
             background-color: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -113,7 +119,6 @@ export class PatternGuardPanel {
             overflow: hidden;
         }
 
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -122,11 +127,7 @@ export class PatternGuardPanel {
             border-bottom: 1px solid var(--border-color);
         }
         
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
         
         .logo-icon {
             width: 32px;
@@ -134,323 +135,109 @@ export class PatternGuardPanel {
             background-color: #E0F2FE;
             border: 2px solid var(--primary);
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
         
-        .logo-icon svg {
-            width: 20px;
-            height: 20px;
-            color: var(--primary);
-        }
-
-        .header-titles h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0;
-            line-height: 1.2;
-        }
-        
-        .header-titles p {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            padding: 0 20px;
-        }
+        .logo-icon svg { width: 20px; height: 20px; color: var(--primary); }
+        .header-titles h1 { font-size: 1.1rem; font-weight: 700; margin: 0; line-height: 1.2; }
+        .header-titles p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+        .header-center { flex: 1; display: flex; justify-content: center; padding: 0 20px; }
 
         .analyze-btn {
             background: linear-gradient(to right, #06B6D4, #2563EB);
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 9999px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: white; border: none; padding: 10px 24px;
+            border-radius: 9999px; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
             box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
             transition: transform 0.1s, box-shadow 0.1s;
         }
+        .analyze-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3); }
 
-        .analyze-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
-        }
+        .header-right { display: flex; gap: 20px; }
+        .stat-block { text-align: right; }
+        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.2rem; font-weight: 700; }
 
-        .header-right {
-            display: flex;
-            gap: 20px;
-        }
+        .main-content { display: flex; flex: 1; overflow: hidden; }
 
-        .stat-block {
-            text-align: right;
-        }
-
-        .stat-label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        /* Layout Split */
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Sidebar */
         .sidebar {
-            width: 320px;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
+            width: 320px; border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; overflow-y: auto;
         }
-
         .sidebar-header {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            background-color: var(--bg-panel);
-            z-index: 10;
+            padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color); position: sticky; top: 0;
+            background-color: var(--bg-panel); z-index: 10;
         }
+        .sidebar-header h2 { font-size: 0.9rem; font-weight: 600; margin: 0; }
+        .sidebar-header span { font-size: 0.75rem; color: var(--text-muted); }
 
-        .sidebar-header h2 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .sidebar-header span {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* Cards */
-        .card {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: background-color 0.2s;
-            position: relative;
-        }
-
-        .card:hover {
-            background-color: var(--card-hover);
-        }
-
-        .card.active {
-            border-left: 4px solid var(--primary);
-            background-color: var(--card-hover);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+        .card { padding: 16px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; position: relative; }
+        .card:hover { background-color: var(--card-hover); }
+        .card.active { border-left: 4px solid var(--primary); background-color: var(--card-hover); }
+        .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+        .card-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         
         .severity-critical .card-icon { background-color: var(--critical-bg); color: var(--critical-text); }
         .severity-warning .card-icon { background-color: var(--warning-bg); color: var(--warning-text); }
         .severity-info .card-icon { background-color: var(--info-bg); color: var(--info-text); }
 
-        .card-title-group {
-            flex: 1;
-        }
-
-        .card-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin: 0 0 4px 0;
-            line-height: 1.3;
-        }
-
-        .card-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        .card-badge {
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
+        .card-title-group { flex: 1; }
+        .card-title { font-size: 0.95rem; font-weight: 600; margin: 0 0 4px 0; line-height: 1.3; }
+        .card-desc { font-size: 0.75rem; color: var(--text-muted); margin: 0; line-height: 1.4; }
+        .card-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
         
         .severity-critical .card-badge { background-color: var(--critical-bg); color: var(--critical-text); }
         .severity-warning .card-badge { background-color: var(--warning-bg); color: var(--warning-text); }
         .severity-info .card-badge { background-color: var(--info-bg); color: var(--info-text); }
 
-        .progress-bar-bg {
-            height: 4px;
-            background-color: var(--border-color);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 2px;
-        }
-        
+        .progress-bar-bg { height: 4px; background-color: var(--border-color); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+        .progress-bar-fill { height: 100%; border-radius: 2px; }
         .severity-critical .progress-bar-fill { background-color: var(--critical-text); width: 85%; }
         .severity-warning .progress-bar-fill { background-color: var(--warning-text); width: 60%; }
         .severity-info .progress-bar-fill { background-color: var(--info-text); width: 30%; }
 
-        /* Code Viewer */
-        .code-viewer {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-color: var(--bg-body);
-        }
+        .code-viewer { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-body); }
+        .code-header { padding: 12px 24px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-panel); display: flex; justify-content: space-between; align-items: center; }
+        .file-path { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .file-path::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); }
+        .flag-badge { background-color: var(--critical-bg); color: var(--critical-text); font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 9999px; }
 
-        .code-header {
-            padding: 12px 24px;
+        .code-content { padding: 20px 0; overflow-y: auto; flex: 1; font-family: 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.6; }
+        .issue-block {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
             border-bottom: 1px solid var(--border-color);
-            background-color: var(--bg-panel);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
-
-        .file-path {
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .code-line { display: flex; padding: 0 24px; position: relative; }
+        .code-line:hover { background-color: var(--card-hover); }
+        .line-number { width: 40px; color: var(--text-muted); text-align: right; padding-right: 16px; user-select: none; opacity: 0.5; }
+        .line-text { white-space: pre; flex: 1; }
+        .code-line.highlighted { background-color: var(--critical-bg); }
+        .code-line.highlighted::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--critical-text); }
         
-        .file-path::before {
-            content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--primary);
-        }
-
-        .flag-badge {
-            background-color: var(--critical-bg);
-            color: var(--critical-text);
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 9999px;
-        }
-
-        .code-content {
-            padding: 20px 0;
-            overflow-y: auto;
-            flex: 1;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-
-        .code-line {
-            display: flex;
-            padding: 0 24px;
-            position: relative;
-        }
-        
-        .code-line:hover {
-            background-color: var(--card-hover);
-        }
-
-        .line-number {
-            width: 40px;
-            color: var(--text-muted);
-            text-align: right;
-            padding-right: 16px;
-            user-select: none;
-            opacity: 0.5;
-        }
-
-        .line-text {
-            white-space: pre;
-            flex: 1;
-        }
-
-        /* Highlighted Code Line */
-        .code-line.highlighted {
-            background-color: var(--critical-bg);
-        }
-
-        .code-line.highlighted::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: var(--critical-text);
-        }
+        .code-line.warning-highlight { background-color: var(--warning-bg); }
+        .code-line.warning-highlight::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--warning-text); }
 
         .floating-capsule {
-            position: absolute;
-            right: 24px;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: var(--critical-text);
-            color: white;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+            color: white; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
+            padding: 4px 10px; border-radius: 9999px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
-        /* Syntax highlighting simple */
-        .kw { color: #C678DD; }
-        .func { color: #61AFEF; }
-        .str { color: #98C379; }
-        .var { color: #E5C07B; }
-        
-        body.vscode-light .kw { color: #A626A4; }
-        body.vscode-light .func { color: #4078F2; }
-        body.vscode-light .str { color: #50A14F; }
-        body.vscode-light .var { color: #986801; }
+        .bg-critical { background-color: var(--critical-text); }
+        .bg-warning { background-color: var(--warning-text); }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: 0.5; }
+        .empty-state p { font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -477,20 +264,19 @@ export class PatternGuardPanel {
             <div class="header-right">
                 <div class="stat-block">
                     <div class="stat-label">Files</div>
-                    <div class="stat-value">247</div>
+                    <div class="stat-value" id="stat-files">0</div>
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Issues</div>
-                    <div class="stat-value" style="color: var(--warning-text)">10</div>
+                    <div class="stat-value" id="stat-issues" style="color: var(--warning-text)">0</div>
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Grade</div>
-                    <div class="stat-value" style="color: var(--critical-text)">C</div>
+                    <div class="stat-value" id="stat-grade" style="color: var(--info-text)">A</div>
                 </div>
             </div>
         </div>
 
-        <!-- Layout Split -->
         <div class="main-content">
             <!-- Sidebar -->
             <div class="sidebar">
@@ -499,7 +285,6 @@ export class PatternGuardPanel {
                     <span>click to inspect</span>
                 </div>
                 
-                <!-- Card: Copy-Paste -->
                 <div class="card active severity-critical" onclick="selectCard(this); alertNotImplemented('Copy-Paste Programming', true)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -511,10 +296,8 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Critical</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
                 </div>
 
-                <!-- Card: Spaghetti Code -->
                 <div class="card severity-warning" onclick="selectCard(this); alertNotImplemented('Spaghetti Code', true)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -526,10 +309,8 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Warning</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
                 </div>
                 
-                <!-- Card: Uncertain Non-Functional -->
                 <div class="card severity-warning" onclick="selectCard(this); alertNotImplemented('Uncertain Non-Functional Requirements', true)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -541,10 +322,8 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Warning</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
                 </div>
 
-                <!-- Card: God Object -->
                 <div class="card severity-critical" onclick="selectCard(this); alertNotImplemented('God Object', false)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -556,10 +335,8 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Coming Soon</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 10%"></div></div>
                 </div>
                 
-                <!-- Card: Shotgun Surgery -->
                 <div class="card severity-warning" onclick="selectCard(this); alertNotImplemented('Shotgun Surgery', false)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -571,10 +348,8 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Coming Soon</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 10%"></div></div>
                 </div>
                 
-                <!-- Card: Lava Flow -->
                 <div class="card severity-info" onclick="selectCard(this); alertNotImplemented('Lava Flow', false)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -586,10 +361,8 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Coming Soon</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 10%"></div></div>
                 </div>
                 
-                <!-- Card: Golden Hammer -->
                 <div class="card severity-info" onclick="selectCard(this); alertNotImplemented('Golden Hammer', false)">
                     <div class="card-header">
                         <div class="card-icon">
@@ -601,35 +374,21 @@ export class PatternGuardPanel {
                         </div>
                         <span class="card-badge">Coming Soon</span>
                     </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 10%"></div></div>
                 </div>
 
             </div>
 
-            <!-- Code Viewer -->
+            <!-- Dynamic Code Viewer -->
             <div class="code-viewer">
                 <div class="code-header">
-                    <div class="file-path">lib/services/user_service.dart &middot; dart</div>
-                    <div class="flag-badge">5 flagged lines</div>
+                    <div class="file-path" id="dynamic-file-path">Workspace Scan Results</div>
+                    <div class="flag-badge" id="dynamic-flag-badge">Waiting to scan...</div>
                 </div>
-                <div class="code-content" id="code-content">
-                    <div class="code-line"><div class="line-number">12</div><div class="line-text">  <span class="kw">Future</span>&lt;<span class="var">void</span>&gt; <span class="func">fetchUserData</span>() <span class="kw">async</span> {</div></div>
-                    <div class="code-line"><div class="line-number">13</div><div class="line-text">    <span class="kw">try</span> {</div></div>
-                    <div class="code-line"><div class="line-number">14</div><div class="line-text">      <span class="kw">final</span> response = <span class="kw">await</span> http.get(Uri.parse(<span class="str">'https://api.example.com/users'</span>));</div></div>
-                    <div class="code-line highlighted">
-                        <div class="line-number">15</div>
-                        <div class="line-text">      <span class="kw">if</span> (response.statusCode == <span class="var">200</span>) {</div>
-                        <div class="floating-capsule">90% match with admin_service.dart</div>
+                <div class="code-content" id="dynamic-code-content">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <p>Click "Analyze Project" to scan your workspace.</p>
                     </div>
-                    <div class="code-line highlighted"><div class="line-number">16</div><div class="line-text">        <span class="kw">var</span> data = jsonDecode(response.body);</div></div>
-                    <div class="code-line highlighted"><div class="line-number">17</div><div class="line-text">        <span class="kw">for</span> (<span class="kw">var</span> item <span class="kw">in</span> data) {</div></div>
-                    <div class="code-line highlighted"><div class="line-number">18</div><div class="line-text">          users.add(User.fromJson(item));</div></div>
-                    <div class="code-line highlighted"><div class="line-number">19</div><div class="line-text">        }</div></div>
-                    <div class="code-line"><div class="line-number">20</div><div class="line-text">      }</div></div>
-                    <div class="code-line"><div class="line-number">21</div><div class="line-text">    } <span class="kw">catch</span> (e) {</div></div>
-                    <div class="code-line"><div class="line-number">22</div><div class="line-text">      print(<span class="str">'Error fetching data'</span>);</div></div>
-                    <div class="code-line"><div class="line-number">23</div><div class="line-text">    }</div></div>
-                    <div class="code-line"><div class="line-number">24</div><div class="line-text">  }</div></div>
                 </div>
             </div>
         </div>
@@ -641,20 +400,14 @@ export class PatternGuardPanel {
         function scanProject() {
             vscode.postMessage({ command: 'scan' });
             
-            // Visual feedback for button click
             const btn = document.querySelector('.analyze-btn');
-            const originalText = btn.innerHTML;
             btn.innerHTML = 'Scanning...';
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-            }, 1000);
+            document.getElementById('dynamic-code-content').innerHTML = '<div class="empty-state"><p>Scanning files...</p></div>';
         }
 
         function alertNotImplemented(patternName, isActive) {
             if (!isActive) {
                 vscode.postMessage({ command: 'notImplemented', text: patternName });
-            } else {
-                vscode.postMessage({ command: 'scan' });
             }
         }
         
@@ -662,6 +415,59 @@ export class PatternGuardPanel {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             element.classList.add('active');
         }
+
+        // Listen for messages from the extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.command === 'updateData') {
+                const btn = document.querySelector('.analyze-btn');
+                btn.innerHTML = 'Analyze Project';
+
+                const issues = message.issues;
+                document.getElementById('stat-files').innerText = message.fileCount;
+                document.getElementById('stat-issues').innerText = issues.length;
+                
+                let grade = 'A';
+                let gradeColor = 'var(--info-text)';
+                if (issues.length > 5) { grade = 'B'; gradeColor = 'var(--warning-text)'; }
+                if (issues.length > 15) { grade = 'C'; gradeColor = 'var(--warning-text)'; }
+                if (issues.length > 30) { grade = 'D'; gradeColor = 'var(--critical-text)'; }
+                if (issues.length > 50) { grade = 'F'; gradeColor = 'var(--critical-text)'; }
+                
+                const gradeEl = document.getElementById('stat-grade');
+                gradeEl.innerText = grade;
+                gradeEl.style.color = gradeColor;
+
+                document.getElementById('dynamic-flag-badge').innerText = issues.length + ' issues found';
+
+                const contentEl = document.getElementById('dynamic-code-content');
+                if (issues.length === 0) {
+                    contentEl.innerHTML = '<div class="empty-state"><p>All clear! No anti-patterns detected.</p></div>';
+                    return;
+                }
+
+                // Render dynamic issues
+                let html = '';
+                issues.forEach(issue => {
+                    const bgClass = issue.severity === 'critical' ? 'bg-critical' : 'bg-warning';
+                    const highlightClass = issue.severity === 'critical' ? 'highlighted' : 'warning-highlight';
+                    // We only have line number and message here.
+                    html += \`
+                    <div class="issue-block">
+                        <div style="padding: 0 24px; margin-bottom: 8px;">
+                            <span style="font-weight: bold; color: var(--text-main);">\${issue.file.split(/[\\\\/]/).pop()}</span> 
+                            <span style="color: var(--text-muted);">Line \${issue.line + 1}</span>
+                        </div>
+                        <div class="code-line \${highlightClass}">
+                            <div class="line-number">\${issue.line + 1}</div>
+                            <div class="line-text" style="padding-top:8px; padding-bottom:8px;">\${issue.message}</div>
+                            <div class="floating-capsule \${bgClass}">\${issue.severity.toUpperCase()}</div>
+                        </div>
+                    </div>\`;
+                });
+                contentEl.innerHTML = html;
+            }
+        });
     </script>
 </body>
 </html>`;

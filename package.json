@@ -8,7 +8,9 @@
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Linters", "Other"],
   "repository": { "type": "git", "url": "https://github.com/shakeelengineer/Pattern-Guard" },
-  "activationEvents": ["workspaceContains:**/*.dart"],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
