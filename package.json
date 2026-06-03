@@ -1,0 +1,56 @@
+{
+  "name": "pattern-guard",
+  "displayName": "Pattern Guard",
+  "description": "Detects anti-patterns in Dart/Flutter projects",
+  "version": "0.1.0",
+  "publisher": "shakeelengineer",
+  "icon": "media/icon.png",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters", "Other"],
+  "repository": { "type": "git", "url": "https://github.com/shakeelengineer/Pattern-Guard" },
+  "activationEvents": ["workspaceContains:**/*.dart"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "patternGuard.scan",
+        "title": "Pattern Guard: Scan Project"
+      },
+      {
+        "command": "patternGuard.showPanel",
+        "title": "Pattern Guard: Open Dashboard"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [{
+        "id": "patternGuard",
+        "title": "Pattern Guard",
+        "icon": "media/icon.png"
+      }]
+    },
+    "views": {
+      "patternGuard": [{
+        "type": "webview",
+        "id": "patternGuard.dashboard",
+        "name": "Anti-Pattern Dashboard"
+      }]
+    },
+    "menus": {
+      "editor/context": [{
+        "command": "patternGuard.scan",
+        "group": "patternGuard"
+      }]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^18.0.0",
+    "@vscode/test-electron": "^2.3.0",
+    "typescript": "^5.0.0"
+  }
+}
