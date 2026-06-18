@@ -1,0 +1,82 @@
+{
+  "name": "pattern-guard",
+  "displayName": "Pattern Guard",
+  "description": "Detects anti-patterns in Dart/Flutter projects",
+  "version": "0.1.0",
+  "publisher": "shakeelengineer",
+  "icon": "media/icon.png",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters", "Other"],
+  "repository": { "type": "git", "url": "https://github.com/shakeelengineer/Pattern-Guard" },
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:patternGuard.dashboard",
+    "onCommand:patternGuard.scan",
+    "onCommand:patternGuard.scanFile",
+    "onCommand:patternGuard.showPanel"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "patternGuard.scan",
+        "title": "Pattern Guard: Scan Project",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "patternGuard.scanFile",
+        "title": "Pattern Guard: Analyze Active File",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "patternGuard.showPanel",
+        "title": "Pattern Guard: Open Dashboard",
+        "icon": "$(layout-sidebar-left)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "patternGuard",
+          "title": "Pattern Guard",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "patternGuard": [
+        {
+          "type": "webview",
+          "id": "patternGuard.dashboard",
+          "name": "Anti-Pattern Dashboard"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "patternGuard.scan",
+          "group": "patternGuard"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "patternGuard.scan",
+          "when": "view == patternGuard.dashboard",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^18.0.0",
+    "@vscode/test-electron": "^2.3.0",
+    "typescript": "^5.0.0"
+  }
+}
