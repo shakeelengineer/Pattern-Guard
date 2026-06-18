@@ -12,8 +12,9 @@ export function detectNonFunctional(content: string, filePath: string): Issue[] 
         issues.push({
           file: filePath,
           line: i,
-          message: `Uncertain Non-Functional Req: Public declaration at line ${i + 1} has no doc comment. Document behavior/performance expectations.`,
-          severity: 'warning'
+          message: `Non-Functional Req: Public declaration at line ${i + 1} has no doc comment. Document behavior/performance expectations.`,
+          severity: 'warning',
+          antiPattern: 'nonFunctional'
         });
       }
     }

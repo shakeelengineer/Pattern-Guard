@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "compile",
+      "group": "build",
+      "label": "npm: compile",
+      "detail": "Compile TypeScript to JavaScript",
+      "problemMatcher": "$tsc",
+      "isBackground": false
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "group": "build",
+      "label": "npm: watch",
+      "detail": "Watch and recompile TypeScript on change",
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true
+    }
+  ]
+}
